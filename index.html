@@ -4,12 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Проверка файлов</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <div class="container">
         <div class="content" id="content">
-            <!-- Здесь будут отображаться результаты проверки или рекомендации -->
             <p>Добро пожаловать! Выберите действие ниже.</p>
         </div>
         <div class="buttons">
@@ -21,34 +20,59 @@
     </div>
 
     <script>
-        function checkFile() {
-            // Логика для выбора файла
-            document.getElementById('content').innerHTML = '<p>Пожалуйста, загрузите файл для проверки.</p>';
+        async function checkFile() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch('/check_file', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                document.getElementById('content').innerHTML = `<p>${result.message}</p>`;
+            };
+            input.click();
         }
 
-        function showRecommendations() {
-            // Логика для отображения рекомендаций
-            document.getElementById('content').innerHTML = '<p>Рекомендации по безопасности:</p><ul><li>Не открывайте подозрительные файлы.</li><li>Используйте антивирусное ПО.</li></ul>';
+        async function showRecommendations() {
+            const response = await fetch('/get_recommendations');
+            const result = await response.json();
+            const recommendations = result.recommendations.map(rec => `<li>${rec}</li>`).join('');
+            document.getElementById('content').innerHTML = `<p>Рекомендации по безопасности:</p><ul>${recommendations}</ul>`;
         }
 
-        function checkLinks() {
-            // Логика для ввода ссылки
-            document.getElementById('content').innerHTML = '<p>Введите ссылку для проверки:</p><input type="text" id="linkInput"><button onclick="submitLink()">Проверить</button>';
+        async function checkLinks() {
+            const link = prompt("Введите ссылку для проверки:");
+            if (link) {
+                const response = await fetch('/check_link', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ link })
+                });
+                const result = await response.json();
+                document.getElementById('content').innerHTML = `<p>${result.message}</p>`;
+            }
         }
 
-        function checkNumbers() {
-            // Логика для проверки номеров
-            document.getElementById('content').innerHTML = '<p>Введите номер для проверки:</p><input type="text" id="numberInput"><button onclick="submitNumber()">Проверить</button>';
-        }
-
-        function submitLink() {
-            const link = document.getElementById('linkInput').value;
-            document.getElementById('content').innerHTML = `<p>Проверка ссылки: ${link}</p>`;
-        }
-
-        function submitNumber() {
-            const number = document.getElementById('numberInput').value;
-            document.getElementById('content').innerHTML = `<p>Проверка номера: ${number}</p>`;
+        async function checkNumbers() {
+            const number = prompt("Введите номер для проверки:");
+            if (number) {
+                const response = await fetch('/check_number', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ number })
+                });
+                const result = await response.json();
+                document.getElementById('content').innerHTML = `<p>${result.message}</p>`;
+            }
         }
     </script>
 </body>
