@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Проверка файлов</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="content" id="content">
+            <!-- Здесь будут отображаться результаты проверки или рекомендации -->
+            <p>Добро пожаловать! Выберите действие ниже.</p>
+        </div>
+        <div class="buttons">
+            <button onclick="checkFile()">Проверка файлов</button>
+            <button onclick="showRecommendations()">Рекомендации</button>
+            <button onclick="checkLinks()">Проверка ссылок</button>
+            <button onclick="checkNumbers()">Проверка номеров</button>
+        </div>
+    </div>
+
+    <script>
+        function checkFile() {
+            // Логика для выбора файла
+            document.getElementById('content').innerHTML = '<p>Пожалуйста, загрузите файл для проверки.</p>';
+        }
+
+        function showRecommendations() {
+            // Логика для отображения рекомендаций
+            document.getElementById('content').innerHTML = '<p>Рекомендации по безопасности:</p><ul><li>Не открывайте подозрительные файлы.</li><li>Используйте антивирусное ПО.</li></ul>';
+        }
+
+        function checkLinks() {
+            // Логика для ввода ссылки
+            document.getElementById('content').innerHTML = '<p>Введите ссылку для проверки:</p><input type="text" id="linkInput"><button onclick="submitLink()">Проверить</button>';
+        }
+
+        function checkNumbers() {
+            // Логика для проверки номеров
+            document.getElementById('content').innerHTML = '<p>Введите номер для проверки:</p><input type="text" id="numberInput"><button onclick="submitNumber()">Проверить</button>';
+        }
+
+        function submitLink() {
+            const link = document.getElementById('linkInput').value;
+            document.getElementById('content').innerHTML = `<p>Проверка ссылки: ${link}</p>`;
+        }
+
+        function submitNumber() {
+            const number = document.getElementById('numberInput').value;
+            document.getElementById('content').innerHTML = `<p>Проверка номера: ${number}</p>`;
+        }
+    </script>
+</body>
+</html>
