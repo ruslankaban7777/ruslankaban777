@@ -3,75 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Проверка файлов</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Telegram Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <div class="content" id="content">
-            <p>Добро пожаловать! Выберите действие ниже.</p>
-        </div>
-        <div class="buttons">
-            <button onclick="checkFile()">Проверка файлов</button>
-            <button onclick="showRecommendations()">Рекомендации</button>
-            <button onclick="checkLinks()">Проверка ссылок</button>
-            <button onclick="checkNumbers()">Проверка номеров</button>
-        </div>
+    <h1>Проверка файлов</h1>
+
+    <div class="section">
+        <h2>Выберите файл</h2>
+        <input type="file" id="file-input">
+        <button onclick="checkFile()">Проверить</button>
+        <p id="file-result"></p>
     </div>
 
     <script>
-        async function checkFile() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.onchange = async (e) => {
-                const file = e.target.files[0];
-                const formData = new FormData();
-                formData.append('file', file);
+        const tg = window.Telegram.WebApp;
+        tg.ready();
 
-                const response = await fetch('/check_file', {
-                    method: 'POST',
-                    body: formData
-                });
-                const result = await response.json();
-                document.getElementById('content').innerHTML = `<p>${result.message}</p>`;
-            };
-            input.click();
-        }
+        function checkFile() {
+            const fileInput = document.getElementById('file-input');
+            const file = fileInput.files[0];
 
-        async function showRecommendations() {
-            const response = await fetch('/get_recommendations');
-            const result = await response.json();
-            const recommendations = result.recommendations.map(rec => `<li>${rec}</li>`).join('');
-            document.getElementById('content').innerHTML = `<p>Рекомендации по безопасности:</p><ul>${recommendations}</ul>`;
-        }
-
-        async function checkLinks() {
-            const link = prompt("Введите ссылку для проверки:");
-            if (link) {
-                const response = await fetch('/check_link', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ link })
-                });
-                const result = await response.json();
-                document.getElementById('content').innerHTML = `<p>${result.message}</p>`;
-            }
-        }
-
-        async function checkNumbers() {
-            const number = prompt("Введите номер для проверки:");
-            if (number) {
-                const response = await fetch('/check_number', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ number })
-                });
-                const result = await response.json();
-                document.getElementById('content').innerHTML = `<p>${result.message}</p>`;
+            if (file) {
+                const data = { type: 'check_file', filename: file.name };
+                tg.sendData(JSON.stringify(data)); // Отправка данных боту
+                document.getElementById('file-result').innerText = Файл "${file.name}" отправлен.;
+            } else {
+                document.getElementById('file-result').innerText = 'Выберите файл.';
             }
         }
     </script>
