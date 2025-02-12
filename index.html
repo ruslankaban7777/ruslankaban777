@@ -12,6 +12,8 @@
             padding: 20px;
             background-color: #f4f4f9;
             color: #333;
+            margin: 0;
+            box-sizing: border-box;
         }
         h1 {
             margin-bottom: 20px;
@@ -19,14 +21,13 @@
         .section {
             margin-bottom: 30px;
         }
-        input, button {
-            padding: 10px;
+        button {
+            width: 100%;
+            padding: 15px;
             margin: 5px;
             font-size: 16px;
             border: 1px solid #ccc;
             border-radius: 5px;
-        }
-        button {
             background-color: #007bff;
             color: white;
             cursor: pointer;
@@ -34,33 +35,48 @@
         button:hover {
             background-color: #0056b3;
         }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
     </style>
 </head>
 <body>
-    <h1>Проверка файлов</h1>
-
-    <div class="section">
-        <h2>Выберите файл</h2>
-        <input type="file" id="file-input">
-        <button onclick="checkFile()">Проверить</button>
-        <p id="file-result"></p>
+    <h1>Выберите действие</h1>
+    <div class="container">
+        <div class="section">
+            <button onclick="openLinkCheck()">Проверка ссылок</button>
+        </div>
+        <div class="section">
+            <button onclick="openFileCheck()">Проверка файлов</button>
+        </div>
+        <div class="section">
+            <button onclick="openSecurityRecommendations()">Рекомендации по безопасности</button>
+        </div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
+
+        // Инициализация Mini App
         tg.ready();
 
-        function checkFile() {
-            const fileInput = document.getElementById('file-input');
-            const file = fileInput.files[0];
+        // Открытие страницы для проверки ссылок
+        function openLinkCheck() {
+            const data = { type: 'check_links' };
+            tg.sendData(JSON.stringify(data)); // Отправляем запрос на проверку ссылок
+        }
 
-            if (file) {
-                const data = { type: 'check_file', filename: file.name };
-                tg.sendData(JSON.stringify(data)); // Отправка данных боту
-                document.getElementById('file-result').innerText = Файл "${file.name}" отправлен.;
-            } else {
-                document.getElementById('file-result').innerText = 'Выберите файл.';
-            }
+        // Открытие страницы для проверки файлов
+        function openFileCheck() {
+            const data = { type: 'check_file' };
+            tg.sendData(JSON.stringify(data)); // Отправляем запрос на проверку файлов
+        }
+
+        // Открытие страницы с рекомендациями по безопасности
+        function openSecurityRecommendations() {
+            const data = { type: 'security_recommendations' };
+            tg.sendData(JSON.stringify(data)); // Отправляем запрос на рекомендации
         }
     </script>
 </body>
