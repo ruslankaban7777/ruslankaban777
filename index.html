@@ -39,6 +39,16 @@
             max-width: 500px;
             margin: 0 auto;
         }
+        .input-field, .file-input {
+            display: none;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .recommendations {
+            display: none;
+            text-align: left;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -53,30 +63,84 @@
         <div class="section">
             <button onclick="openSecurityRecommendations()">Рекомендации по безопасности</button>
         </div>
+
+        <!-- Строка для ввода ссылки -->
+        <div id="link-check" class="input-field">
+            <input type="text" id="link-input" placeholder="Введите ссылку" />
+            <button onclick="submitLink()">Проверить ссылку</button>
+        </div>
+
+        <!-- Меню для выбора файла -->
+        <div id="file-check" class="file-input">
+            <input type="file" id="file-input" />
+            <button onclick="submitFile()">Проверить файл</button>
+        </div>
+
+        <!-- Рекомендации по безопасности -->
+        <div id="security-recommendations" class="recommendations">
+            <h3>Основные рекомендации:</h3>
+            <ul>
+                <li>Не открывайте подозрительные ссылки.</li>
+                <li>Используйте сложные пароли.</li>
+                <li>Не загружайте файлы из ненадежных источников.</li>
+            </ul>
+        </div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-
-        // Инициализация Mini App
         tg.ready();
 
         // Открытие страницы для проверки ссылок
         function openLinkCheck() {
-            const data = { type: 'check_links' };
-            tg.sendData(JSON.stringify(data)); // Отправляем запрос на проверку ссылок
+            // Скрыть другие секции
+            hideSections();
+            document.getElementById("link-check").style.display = "block";
         }
 
         // Открытие страницы для проверки файлов
         function openFileCheck() {
-            const data = { type: 'check_file' };
-            tg.sendData(JSON.stringify(data)); // Отправляем запрос на проверку файлов
+            // Скрыть другие секции
+            hideSections();
+            document.getElementById("file-check").style.display = "block";
         }
 
-        // Открытие страницы с рекомендациями по безопасности
+        // Открытие рекомендаций по безопасности
         function openSecurityRecommendations() {
-            const data = { type: 'security_recommendations' };
-            tg.sendData(JSON.stringify(data)); // Отправляем запрос на рекомендации
+            // Скрыть другие секции
+            hideSections();
+            document.getElementById("security-recommendations").style.display = "block";
+        }
+
+        // Скрыть все секции
+        function hideSections() {
+            document.getElementById("link-check").style.display = "none";
+            document.getElementById("file-check").style.display = "none";
+            document.getElementById("security-recommendations").style.display = "none";
+        }
+
+        // Отправить ссылку для проверки
+        function submitLink() {
+            const link = document.getElementById('link-input').value;
+            if (link) {
+                const data = { type: 'check_links', link };
+                tg.sendData(JSON.
+stringify(data)); // Отправляем запрос на проверку ссылки
+            } else {
+                alert('Пожалуйста, введите ссылку!');
+            }
+        }
+
+        // Отправить файл для проверки
+        function submitFile() {
+            const fileInput = document.getElementById('file-input');
+            const file = fileInput.files[0];
+            if (file) {
+                const data = { type: 'check_file', filename: file.name };
+                tg.sendData(JSON.stringify(data)); // Отправляем запрос на проверку файла
+            } else {
+                alert('Пожалуйста, выберите файл!');
+            }
         }
     </script>
 </body>
