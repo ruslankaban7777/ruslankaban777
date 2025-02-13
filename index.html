@@ -44,10 +44,12 @@
             width: 100%;
             margin-top: 20px;
         }
-        .recommendations {
-            display: none;
-            text-align: left;
+        .result {
             margin-top: 20px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            text-align: left;
         }
     </style>
 </head>
@@ -60,30 +62,19 @@
         <div class="section">
             <button onclick="openFileCheck()">Проверка файлов</button>
         </div>
-        <div class="section">
-            <button onclick="openSecurityRecommendations()">Рекомендации по безопасности</button>
-        </div>
 
         <!-- Строка для ввода ссылки -->
         <div id="link-check" class="input-field">
             <input type="text" id="link-input" placeholder="Введите ссылку" />
             <button onclick="submitLink()">Проверить ссылку</button>
+            <div id="link-result" class="result"></div>
         </div>
 
         <!-- Меню для выбора файла -->
         <div id="file-check" class="file-input">
             <input type="file" id="file-input" />
             <button onclick="submitFile()">Проверить файл</button>
-        </div>
-
-        <!-- Рекомендации по безопасности -->
-        <div id="security-recommendations" class="recommendations">
-            <h3>Основные рекомендации:</h3>
-            <ul>
-                <li>Не открывайте подозрительные ссылки.</li>
-                <li>Используйте сложные пароли.</li>
-                <li>Не загружайте файлы из ненадежных источников.</li>
-            </ul>
+            <div id="file-result" class="result"></div>
         </div>
     </div>
 
@@ -91,53 +82,125 @@
         const tg = window.Telegram.WebApp;
         tg.ready();
 
+        const apiKey = "3f5fa2f2b0c6bb931ad2d29d40d3b74104febdd469048fe6a7acdd5ae049373d"; // Ваш API-ключ VirusTotal
+
         // Открытие страницы для проверки ссылок
         function openLinkCheck() {
-            // Скрыть другие секции
             hideSections();
             document.getElementById("link-check").style.display = "block";
         }
 
         // Открытие страницы для проверки файлов
         function openFileCheck() {
-            // Скрыть другие секции
             hideSections();
             document.getElementById("file-check").style.display = "block";
-        }
-
-        // Открытие рекомендаций по безопасности
-        function openSecurityRecommendations() {
-            // Скрыть другие секции
-            hideSections();
-            document.getElementById("security-recommendations").style.display = "block";
         }
 
         // Скрыть все секции
         function hideSections() {
             document.getElementById("link-check").style.display = "none";
             document.getElementById("file-check").style.display = "none";
-            document.getElementById("security-recommendations").style.display = "none";
+        }
+
+        // Проверка ссылки через VirusTotal API
+        async function checkLink(link) {
+            const url = "https://www.virustotal.com/api/v3/urls";
+            const encodedUrl = btoa(link).replace(/=/g, '');
+
+            try {
+                const response = await fetch(`${url}/${encodedUrl}`, {
+                    method: "GET",
+                    headers: {
+                        "x-apikey": apiKey,
+                    },
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const stats = data.data.attributes.last_analysis_stats;
+
+                    if (stats.malicious > 0) {
+                        return `⚠️ ВНИМАНИЕ: Ссылка признана вредоносной!\nВредность: ${stats.malicious} из ${Object.values(stats).reduce((a, b) => a + b, 0)}.`;
+                    } else {
+                        return "✅ Ссылка безопасна.";
+                    }
+                } else if (response.status === 404) {
+                    return "ℹ️ Ссылка не найдена в базе VirusTotal.";
+                } else {
+                    return `Ошибка проверки: ${response.status} ${response.statusText}`;
+                }
+            } catch (error) {
+                return `Ошибка проверки: ${error.message}`;
+            }
+        }
+
+        // Проверка файла через VirusTotal API
+        async function checkFile(file) {
+            const url = "https://www.virustotal.com/api/v3/files";
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                const uploadResponse = await fetch(url, {
+                    method: "POST",
+                    headers: {
+                        "x-apikey": apiKey,
+                    },
+                    body: formData,
+                });
+
+                if (uploadResponse.ok) {
+                    const uploadData = await uploadResponse.json();
+                    const fileId = uploadData.data.id;
+
+                    // Получаем отчет о файле
+                    const reportUrl = `https://www.virustotal.com/api/v3/analyses/${fileId}`;
+                    const reportResponse = await fetch(reportUrl, {
+                        method: "GET",
+                        headers: {
+                            "x-apikey": apiKey,
+                        },
+                    });
+
+                    if (reportResponse.ok) {
+                        const reportData = await reportResponse.json();
+                        const stats = reportData.data.attributes.stats;
+
+                        if (stats.malicious > 0) {
+                            return `⚠️ ВНИМАНИЕ: Файл признан вредоносным!\nВредность: ${stats.malicious} из ${Object.values(stats).reduce((a, b) => a + b, 0)}.`;
+                        } else {
+                            return "✅ Файл безопасен.";
+                        }
+                    } else {
+                        return `Ошибка получения отчета: ${reportResponse.status} ${reportResponse.statusText}`;
+                    }
+                } else {
+                    return `Ошибка загрузки файла: ${uploadResponse.status} ${uploadResponse.statusText}`;
+                }
+            } catch (error) {
+                return `Ошибка проверки файла: ${error.message}`;
+            }
         }
 
         // Отправить ссылку для проверки
-        function submitLink() {
+        async function submitLink() {
             const link = document.getElementById('link-input').value;
             if (link) {
-                const data = { type: 'check_links', link };
-                tg.sendData(JSON.
-stringify(data)); // Отправляем запрос на проверку ссылки
+                const result = await checkLink(link);
+                document.getElementById('link-result').innerText = result;
             } else {
                 alert('Пожалуйста, введите ссылку!');
             }
         }
 
         // Отправить файл для проверки
-        function submitFile() {
+        async function submitFile() {
             const fileInput = document.getElementById('file-input');
             const file = fileInput.files[0];
             if (file) {
-                const data = { type: 'check_file', filename: file.name };
-                tg.sendData(JSON.stringify(data)); // Отправляем запрос на проверку файла
+                const result = await checkFile(file);
+                document.getElementById('file-result').innerText = result;
             } else {
                 alert('Пожалуйста, выберите файл!');
             }
