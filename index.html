@@ -82,7 +82,7 @@
         const tg = window.Telegram.WebApp;
         tg.ready();
 
-        const apiKey = "3f5fa2f2b0c6bb931ad2d29d40d3b74104febdd469048fe6a7acdd5ae049373d"; // Ваш API-ключ VirusTotal
+        const proxyUrl = "https://proxy-iota-bay.vercel.app"; // Замените на URL вашего прокси-сервера
 
         // Открытие страницы для проверки ссылок
         function openLinkCheck() {
@@ -102,30 +102,20 @@
             document.getElementById("file-check").style.display = "none";
         }
 
-        // Проверка ссылки через VirusTotal API
+        // Проверка ссылки через прокси-сервер
         async function checkLink(link) {
-            const url = "https://www.virustotal.com/api/v3/urls";
-            const encodedUrl = btoa(link).replace(/=/g, '');
-
             try {
-                const response = await fetch(`${url}/${encodedUrl}`, {
-                    method: "GET",
+                const response = await fetch(`${proxyUrl}/check-link`, {
+                    method: "POST",
                     headers: {
-                        "x-apikey": apiKey,
+                        "Content-Type": "application/json",
                     },
+                    body: JSON.stringify({ link }),
                 });
 
                 if (response.ok) {
                     const data = await response.json();
-                    const stats = data.data.attributes.last_analysis_stats;
-
-                    if (stats.malicious > 0) {
-                        return `⚠️ ВНИМАНИЕ: Ссылка признана вредоносной!\nВредность: ${stats.malicious} из ${Object.values(stats).reduce((a, b) => a + b, 0)}.`;
-                    } else {
-                        return "✅ Ссылка безопасна.";
-                    }
-                } else if (response.status === 404) {
-                    return "ℹ️ Ссылка не найдена в базе VirusTotal.";
+                    return data.result;
                 } else {
                     return `Ошибка проверки: ${response.status} ${response.statusText}`;
                 }
@@ -134,49 +124,22 @@
             }
         }
 
-        // Проверка файла через VirusTotal API
+        // Проверка файла через прокси-сервер
         async function checkFile(file) {
-            const url = "https://www.virustotal.com/api/v3/files";
-
             const formData = new FormData();
             formData.append("file", file);
 
             try {
-                const uploadResponse = await fetch(url, {
+                const response = await fetch(`${proxyUrl}/check-file`, {
                     method: "POST",
-                    headers: {
-                        "x-apikey": apiKey,
-                    },
                     body: formData,
                 });
 
-                if (uploadResponse.ok) {
-                    const uploadData = await uploadResponse.json();
-                    const fileId = uploadData.data.id;
-
-                    // Получаем отчет о файле
-                    const reportUrl = `https://www.virustotal.com/api/v3/analyses/${fileId}`;
-                    const reportResponse = await fetch(reportUrl, {
-                        method: "GET",
-                        headers: {
-                            "x-apikey": apiKey,
-                        },
-                    });
-
-                    if (reportResponse.ok) {
-                        const reportData = await reportResponse.json();
-                        const stats = reportData.data.attributes.stats;
-
-                        if (stats.malicious > 0) {
-                            return `⚠️ ВНИМАНИЕ: Файл признан вредоносным!\nВредность: ${stats.malicious} из ${Object.values(stats).reduce((a, b) => a + b, 0)}.`;
-                        } else {
-                            return "✅ Файл безопасен.";
-                        }
-                    } else {
-                        return `Ошибка получения отчета: ${reportResponse.status} ${reportResponse.statusText}`;
-                    }
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.result;
                 } else {
-                    return `Ошибка загрузки файла: ${uploadResponse.status} ${uploadResponse.statusText}`;
+                    return `Ошибка загрузки файла: ${response.status} ${response.statusText}`;
                 }
             } catch (error) {
                 return `Ошибка проверки файла: ${error.message}`;
