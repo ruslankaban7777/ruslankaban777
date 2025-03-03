@@ -82,27 +82,25 @@
         const tg = window.Telegram.WebApp;
         tg.ready();
 
-        const proxyUrl = "https://proxy-iota-bay.vercel.app"; // Замените на URL вашего прокси-сервера
-
-        // Открытие страницы для проверки ссылок
+        const proxyUrl = "https://proxy-iota-bay.vercel.app"; 
         function openLinkCheck() {
             hideSections();
             document.getElementById("link-check").style.display = "block";
         }
 
-        // Открытие страницы для проверки файлов
+      
         function openFileCheck() {
             hideSections();
             document.getElementById("file-check").style.display = "block";
         }
 
-        // Скрыть все секции
+    
         function hideSections() {
             document.getElementById("link-check").style.display = "none";
             document.getElementById("file-check").style.display = "none";
         }
 
-        // Проверка ссылки через прокси-сервер
+
         async function checkLink(link) {
             try {
                 const response = await fetch(`${proxyUrl}/check-link`, {
@@ -124,7 +122,7 @@
             }
         }
 
-        // Проверка файла через прокси-сервер
+
         async function checkFile(file) {
             const formData = new FormData();
             formData.append("file", file);
@@ -146,7 +144,7 @@
             }
         }
 
-        // Отправить ссылку для проверки
+
         async function submitLink() {
             const link = document.getElementById('link-input').value;
             if (link) {
@@ -157,7 +155,7 @@
             }
         }
 
-        // Отправить файл для проверки
+
         async function submitFile() {
             const fileInput = document.getElementById('file-input');
             const file = fileInput.files[0];
