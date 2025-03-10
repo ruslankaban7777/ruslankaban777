@@ -10,46 +10,111 @@
             font-family: Arial, sans-serif;
             text-align: center;
             padding: 20px;
-            background-color: #f4f4f9;
+            background-color: #f8f9fa; 
             color: #333;
             margin: 0;
             box-sizing: border-box;
         }
         h1 {
             margin-bottom: 20px;
+            color: #4e4e4e; 
         }
         .section {
             margin-bottom: 30px;
         }
         button {
+            position: relative;
+            overflow: hidden;
             width: 100%;
             padding: 15px;
             margin: 5px;
             font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            border: none;
+            border-radius: 50px;
             background-color: #007bff;
             color: white;
             cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
         }
+
         button:hover {
             background-color: #0056b3;
+            box-shadow: 0 0 10px rgba(0, 91, 187, 0.5);
         }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        button::after {
+            content: "";
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.4);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            border-radius: 50%;
+            transition: transform 0.5s ease-out, opacity 0.5s ease-out;
+            opacity: 0;
+        }
+
+        button:active::after {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
         .container {
             max-width: 500px;
             margin: 0 auto;
         }
+
         .input-field, .file-input {
             display: none;
             width: 100%;
             margin-top: 20px;
         }
+
+        .input-field input, .file-input input {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid #ccc; 
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        .input-field input:focus, .file-input input:focus {
+            border-color: #28a745; 
+            outline: none;
+        }
+
+        .input-field button, .file-input button {
+            width: 100%;
+            padding: 12px;
+            background-color: #28a745; 
+            color: white;
+            font-size: 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .input-field button:hover, .file-input button:hover {
+            background-color: #218838; 
+        }
+
         .result {
             margin-top: 20px;
             padding: 10px;
             background-color: #e9ecef;
             border-radius: 5px;
             text-align: left;
+            color: #495057; 
         }
     </style>
 </head>
@@ -82,24 +147,22 @@
         const tg = window.Telegram.WebApp;
         tg.ready();
 
-        const proxyUrl = "https://proxy-iota-bay.vercel.app"; 
+        const proxyUrl = "http://localhost:3000"; 
+
         function openLinkCheck() {
             hideSections();
             document.getElementById("link-check").style.display = "block";
         }
 
-      
         function openFileCheck() {
             hideSections();
             document.getElementById("file-check").style.display = "block";
         }
 
-    
         function hideSections() {
             document.getElementById("link-check").style.display = "none";
             document.getElementById("file-check").style.display = "none";
         }
-
 
         async function checkLink(link) {
             try {
@@ -122,7 +185,6 @@
             }
         }
 
-
         async function checkFile(file) {
             const formData = new FormData();
             formData.append("file", file);
@@ -144,7 +206,6 @@
             }
         }
 
-
         async function submitLink() {
             const link = document.getElementById('link-input').value;
             if (link) {
@@ -154,7 +215,6 @@
                 alert('Пожалуйста, введите ссылку!');
             }
         }
-
 
         async function submitFile() {
             const fileInput = document.getElementById('file-input');
@@ -169,3 +229,4 @@
     </script>
 </body>
 </html>
+
